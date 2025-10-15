@@ -39,66 +39,106 @@ const Home = () => {
   }, [filters.search, searchParams, setSearchParams]);
 
   const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/products');
-
-      let filteredProducts = response.data.data;
-
-      // Apply search filter
-      if (filters.search) {
-        const searchTerm = filters.search.toLowerCase();
-        filteredProducts = filteredProducts.filter(product =>
-          product.name.toLowerCase().includes(searchTerm) ||
-          product.description.toLowerCase().includes(searchTerm) ||
-          product.category.toLowerCase().includes(searchTerm)
-        );
+    setLoading(true);
+    // Dummy data
+    const dummyProducts = [
+      {
+        _id: '1',
+        name: 'Wireless Headphones',
+        description: 'High-quality wireless headphones with active noise cancellation and 30-hour battery life',
+        price: 2999,
+        image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500',
+        category: 'Electronics',
+        stock: 50,
+        rating: 4.5,
+        numReviews: 120
+      },
+      {
+        _id: '2',
+        name: 'Smart Watch Pro',
+        description: 'Feature-rich smartwatch with fitness tracking, heart rate monitor, and GPS',
+        price: 4999,
+        image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500',
+        category: 'Electronics',
+        stock: 30,
+        rating: 4.7,
+        numReviews: 85
+      },
+      {
+        _id: '3',
+        name: 'Premium Cotton T-Shirt',
+        description: 'Comfortable 100% cotton t-shirt for everyday wear, available in multiple colors',
+        price: 499,
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500',
+        category: 'Clothing',
+        stock: 100,
+        rating: 4.0,
+        numReviews: 200
+      },
+      {
+        _id: '4',
+        name: 'Modern Web Development Guide',
+        description: 'Complete guide to modern web development with React, Node.js, and MongoDB',
+        price: 799,
+        image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?w=500',
+        category: 'Books',
+        stock: 75,
+        rating: 4.8,
+        numReviews: 150
       }
+    ];
 
-      // Apply category filter
-      if (filters.category) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.category === filters.category
-        );
-      }
+    let filteredProducts = dummyProducts;
 
-      // Apply price filters
-      if (filters.minPrice) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.price >= parseFloat(filters.minPrice)
-        );
-      }
-
-      if (filters.maxPrice) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.price <= parseFloat(filters.maxPrice)
-        );
-      }
-
-      // Apply sorting
-      filteredProducts.sort((a, b) => {
-        let aValue = a[filters.sortBy];
-        let bValue = b[filters.sortBy];
-
-        if (typeof aValue === 'string') {
-          aValue = aValue.toLowerCase();
-          bValue = bValue.toLowerCase();
-        }
-
-        if (filters.sortOrder === 'asc') {
-          return aValue > bValue ? 1 : -1;
-        } else {
-          return aValue < bValue ? 1 : -1;
-        }
-      });
-
-      setProducts(filteredProducts);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast.error('Failed to load products');
-    } finally {
-      setLoading(false);
+    // Apply search filter
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase();
+      filteredProducts = filteredProducts.filter(product =>
+        product.name.toLowerCase().includes(searchTerm) ||
+        product.description.toLowerCase().includes(searchTerm) ||
+        product.category.toLowerCase().includes(searchTerm)
+      );
     }
+
+    // Apply category filter
+    if (filters.category) {
+      filteredProducts = filteredProducts.filter(product =>
+        product.category === filters.category
+      );
+    }
+
+    // Apply price filters
+    if (filters.minPrice) {
+      filteredProducts = filteredProducts.filter(product =>
+        product.price >= parseFloat(filters.minPrice)
+      );
+    }
+
+    if (filters.maxPrice) {
+      filteredProducts = filteredProducts.filter(product =>
+        product.price <= parseFloat(filters.maxPrice)
+      );
+    }
+
+    // Apply sorting
+    filteredProducts.sort((a, b) => {
+      let aValue = a[filters.sortBy];
+      let bValue = b[filters.sortBy];
+
+      if (typeof aValue === 'string') {
+        aValue = aValue.toLowerCase();
+        bValue = bValue.toLowerCase();
+      }
+
+      if (filters.sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    setProducts(filteredProducts);
+    setLoading(false);
   };
 
   const handleSearch = (e) => {

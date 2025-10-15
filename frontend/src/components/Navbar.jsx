@@ -2,11 +2,13 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Search, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { cartItemsCount } = useCart();
+  const { user, logout } = useAuth();
   const location = useLocation();
 
   const handleSearch = (e) => {
@@ -84,6 +86,34 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
+
+            {/* Auth Links */}
+            {!user ? (
+              <>
+                <Link
+                  to="/login"
+                  className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/signup"
+                  className="px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  Sign up
+                </Link>
+              </>
+            ) : (
+              <div className="flex items-center gap-3">
+                <span className="text-gray-700">Hi, {user.name}</span>
+                <button
+                  onClick={() => logout()}
+                  className="px-3 py-1 rounded-md text-sm bg-gray-100 hover:bg-gray-200"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -158,6 +188,18 @@ const Navbar = () => {
                   </span>
                 )}
               </Link>
+              {/* Mobile Auth Links */}
+              {!user ? (
+                <>
+                  <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-100" onClick={() => setIsMenuOpen(false)}>Log in</Link>
+                  <Link to="/signup" className="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700" onClick={() => setIsMenuOpen(false)}>Sign up</Link>
+                </>
+              ) : (
+                <div className="px-3 py-2">
+                  <div className="text-sm text-gray-700">Hi, {user.name}</div>
+                  <button onClick={() => { logout(); setIsMenuOpen(false); }} className="mt-2 w-full text-left px-2 py-1 rounded-md bg-gray-100 hover:bg-gray-200">Logout</button>
+                </div>
+              )}
             </div>
           </div>
         )}

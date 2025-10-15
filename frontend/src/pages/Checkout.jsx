@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, CreditCard, MapPin, User, Mail, Phone } from 'lucide-react';
 import api from '../../api/axios';
 import toast from 'react-hot-toast';
@@ -9,6 +10,7 @@ import Loader from '../components/Loader';
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -28,6 +30,13 @@ const Checkout = () => {
     }
   }, [items.length, navigate]);
 
+  useEffect(() => {
+    if (!user) {
+      // redirect to login and preserve return location
+      navigate('/login', { state: { from: '/checkout' } });
+    }
+  }, [user, navigate]);
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -37,7 +46,7 @@ const Checkout = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => ({
@@ -98,7 +107,7 @@ const Checkout = () => {
 
   const handleCheckout = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       toast.error('Please fill in all required fields correctly');
       return;
@@ -107,21 +116,29 @@ const Checkout = () => {
     try {
       setLoading(true);
 
-      // Create checkout session with Stripe
-      const response = await api.post('/create-checkout-session', {
-        cartItems: items,
-        email: formData.email
+      // FIXED: Changed endpoint and payload structure
+      const response = await api.post('/orders/checkout', {
+        email: formData.email,
+        items: items,
+        shippingAddress: formData.shippingAddress
       });
 
+      console.log('Checkout response:', response.data);
+
       if (response.data.success && response.data.url) {
+        // Clear cart before redirecting
+        clearCart();
         // Redirect to Stripe checkout
         window.location.href = response.data.url;
       } else {
         throw new Error('Failed to create checkout session');
       }
     } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error('Failed to process checkout. Please try again.');
+      console.error('❌ Checkout error:', error);
+      console.error('Error response:', error.response?.data);
+
+      const errorMessage = error.response?.data?.message || 'Failed to process checkout. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -162,7 +179,7 @@ const Checkout = () => {
                   <Mail className="h-5 w-5 mr-2" />
                   Contact Information
                 </h2>
-                
+
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                     Email Address *
@@ -173,9 +190,8 @@ const Checkout = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.email ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     placeholder="your@email.com"
                   />
                   {errors.email && (
@@ -202,9 +218,8 @@ const Checkout = () => {
                       name="shippingAddress.name"
                       value={formData.shippingAddress.name}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors['shippingAddress.name'] ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors['shippingAddress.name'] ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="John Doe"
                     />
                     {errors['shippingAddress.name'] && (
@@ -222,9 +237,8 @@ const Checkout = () => {
                       value={formData.shippingAddress.address}
                       onChange={handleInputChange}
                       rows={3}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors['shippingAddress.address'] ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors['shippingAddress.address'] ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Street address, apartment, suite, etc."
                     />
                     {errors['shippingAddress.address'] && (
@@ -243,9 +257,8 @@ const Checkout = () => {
                         name="shippingAddress.city"
                         value={formData.shippingAddress.city}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          errors['shippingAddress.city'] ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors['shippingAddress.city'] ? 'border-red-500' : 'border-gray-300'
+                          }`}
                         placeholder="Mumbai"
                       />
                       {errors['shippingAddress.city'] && (
@@ -263,9 +276,8 @@ const Checkout = () => {
                         name="shippingAddress.postalCode"
                         value={formData.shippingAddress.postalCode}
                         onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                          errors['shippingAddress.postalCode'] ? 'border-red-500' : 'border-gray-300'
-                        }`}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors['shippingAddress.postalCode'] ? 'border-red-500' : 'border-gray-300'
+                          }`}
                         placeholder="400001"
                         maxLength="6"
                       />
@@ -299,7 +311,7 @@ const Checkout = () => {
                   Payment Information
                 </h2>
                 <p className="text-sm text-gray-600">
-                  You will be redirected to Stripe for secure payment processing. 
+                  You will be redirected to Stripe for secure payment processing.
                   We accept all major credit cards and UPI payments.
                 </p>
               </div>
@@ -323,7 +335,7 @@ const Checkout = () => {
           </div>
 
           {/* Order Summary */}
-          <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-8">
+          <div className="bg-white rounded-lg shadow-sm border p-6 lg:sticky lg:top-8 h-fit">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               Order Summary
             </h2>

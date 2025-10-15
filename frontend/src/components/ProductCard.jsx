@@ -1,12 +1,25 @@
 import { ShoppingCart, Star } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleAddToCart = async () => {
+    // Require login before adding to cart
+    if (!user) {
+      toast('Please log in to add items to your cart', { icon: '🔒' });
+      // preserve current location so we can come back after login
+      navigate('/login', { state: { from: window.location.pathname } });
+      return;
+    }
+
     setIsLoading(true);
     try {
       addToCart(product, 1);

@@ -1,10 +1,21 @@
 import { Link } from 'react-router-dom';
 import { ShoppingCart, ArrowLeft, Trash2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate, Navigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import CartItem from '../components/CartItem';
 
 const Cart = () => {
   const { items, cartTotal, clearCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Avoid a flash when the AuthProvider is still initializing: check localStorage synchronously.
+  const stored = localStorage.getItem('auth_user');
+  if (!user && !stored) {
+    return <Navigate to="/login" replace state={{ from: '/cart' }} />;
+  }
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-IN', {
@@ -138,12 +149,19 @@ const Cart = () => {
               </div>
 
               {/* Checkout Button */}
-              <Link
-                to="/checkout"
+              <button
+                onClick={() => {
+                  if (!user) {
+                    toast('Please log in to proceed to checkout', { icon: '🔒' });
+                    navigate('/login', { state: { from: '/checkout' } });
+                    return;
+                  }
+                  navigate('/checkout');
+                }}
                 className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors text-center block"
               >
                 Proceed to Checkout
-              </Link>
+              </button>
 
               {/* Security Notice */}
               <div className="mt-4 text-center">

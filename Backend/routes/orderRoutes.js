@@ -1,27 +1,36 @@
 import express from 'express';
 import {
+    verifyPayment,
     getOrders,
     getOrderById,
     getOrderBySessionId,
+    createCheckoutSession,
     createOrder,
     updateOrder
 } from '../controllers/orderController.js';
 
+import { protect, admin } from '../middleware/auth.js';
+
+import { handleWebhook } from '../controllers/paymentController.js';
+
 const router = express.Router();
 
-// Get all orders for a user (query by email)
-router.get('/', getOrders);
+// Webhook route (must be before express.json() middleware)
+router.post('/webhook', handleWebhook);
 
-// Get order by session ID
-router.get('/session/:sessionId', getOrderBySessionId);
+// Verify payment route - THIS IS THE ONE YOU NEED
+// Verify payment by sessionId (keeps public so checkout redirect works)
+router.get('/verify-payment/:sessionId', verifyPayment);
 
-// Get single order by ID
-router.get('/:id', getOrderById);
+// Other routes
 
-// Create new order
-router.post('/', createOrder);
-
-// Update order
-router.put('/:id', updateOrder);
+// Protected routes - only authenticated users may access orders
+router.get('/', protect, getOrders);
+router.get('/session/:sessionId', protect, getOrderBySessionId); // require auth to view order by session
+router.get('/:id', protect, getOrderById);
+router.post('/checkout', protect, createCheckoutSession);
+router.post('/', protect, createOrder);
+// Only admins should be able to update orders
+router.put('/:id', protect, admin, updateOrder);
 
 export default router;
