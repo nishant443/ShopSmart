@@ -1,74 +1,39 @@
-🛍️ ShopSmart
+# 🛍️ ShopSmart — Full-stack E‑commerce Demo
 
-ShopSmart is a simple full-stack e-commerce demo built with a Node.js + Express + MongoDB backend and a React + Vite frontend.
-It features product listing, a shopping cart, Stripe-powered checkout, order management, and webhook-based payment verification.
+ShopSmart is a compact full‑stack e‑commerce demo built with a Node.js + Express + MongoDB backend and a React + Vite frontend. It demonstrates a complete purchase flow: product listing, cart management, Stripe-powered checkout, webhook payment verification, and order history persisted in MongoDB.
 
-📋 Table of Contents
+This README is a polished, copy‑ready guide you can drop into the repository root.
 
-Tech Stack
+---
 
-Features
+## 📌 Quick Links
+- Frontend: `frontend/`
+- Backend: `Backend/`
+- Example env file: `.env.example`
 
-Project Structure
+---
 
-Environment Variables
+## ⚙️ Tech Stack
+- Frontend: React + Vite, React Router, Tailwind CSS
+- Backend: Node.js, Express, MongoDB (Mongoose)
+- Payments: Stripe (Checkout + Webhook)
+- Dev tools: Nodemon, ESLint
 
-Installation & Setup
+---
 
-1. Clone the Repository
+## ✨ Features
+- Product listing (server API)
+- Add / remove / update cart items
+- Checkout using Stripe Checkout
+- Payment verification via Stripe Webhook
+- Orders persisted in MongoDB
+- Admin-style endpoints for order retrieval
 
-2. Backend Setup
+---
 
-3. Frontend Setup
-
-Running the Application
-
-API Overview
-
-Stripe Webhook Setup
-
-Troubleshooting
-
-Contributing
-
-License
-
-⚙️ Tech Stack
-
-Frontend
-
-React (with Vite)
-
-React Router
-
-Tailwind CSS
-
-Backend
-
-Node.js + Express
-
-MongoDB + Mongoose
-
-Stripe API (Checkout + Webhook)
-
-Dev Tools
-
-Nodemon (backend auto-restart)
-
-ESLint (frontend linting)
-
-✨ Features
-
-✅ Product listing (fetched from backend)
-✅ Add to Cart / Remove from Cart
-✅ Update product quantities
-✅ Checkout using Stripe
-✅ Payment verification via Webhook
-✅ Order confirmation and persistence in MongoDB
-
-🧩 Project Structure
+## 📁 Project Structure
+```
 ShopSmart/
-│
 ├── Backend/                 # Express + MongoDB backend
 │   ├── controllers/         # Business logic for routes
 │   ├── models/              # Mongoose schemas
@@ -81,129 +46,121 @@ ShopSmart/
 │   ├── src/
 │   │   ├── components/      # Reusable UI components
 │   │   ├── context/         # Global state (CartContext)
-│   │   ├── pages/           # App pages (Products, Checkout, etc.)
+│   │   ├── pages/           # App pages (Products, Checkout, Orders)
 │   │   ├── App.jsx
 │   │   └── main.jsx
 │   └── package.json
 │
 ├── README.md
-└── .env.example             # Example environment file
+└── .env.example
+```
 
-🔐 Environment Variables
+---
 
-Create a .env file inside the Backend/ folder with the following keys:
+## 🔐 Environment Variables
+Create a `.env` file inside the `Backend/` folder and add the following:
 
+```
 MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/shop
 PORT=5000
 CLIENT_URL=http://localhost:5173
 NODE_ENV=development
 STRIPE_SECRET_KEY=sk_test_*************************
 STRIPE_WEBHOOK_SECRET=whsec_*************************
+```
 
+> Note: Do NOT commit your `.env` to version control. Provide a `.env.example` instead with only variable names.
 
-💡 Note:
-Never commit this file to version control. You can create .env.example for sharing key names only.
+---
 
-🧰 Installation & Setup
-1. Clone the Repository
+## 🧰 Installation & Setup
+
+1) Clone the repository
+```bash
 git clone https://github.com/<your-username>/ShopSmart.git
 cd ShopSmart
+```
 
-2. Backend Setup
+2) Backend
+```bash
 cd Backend
 npm install
-
-
-Create .env in Backend/ as described above.
-Then run the server (choose one):
-
-npm run dev   # Development mode (nodemon)
+# create .env using the variables above
+npm run dev   # development (nodemon)
 # or
-npm start     # Production mode
+npm start     # production
+```
+Your backend will run at `http://localhost:5000`.
 
-
-Your backend should now run on http://localhost:5000.
-
-3. Frontend Setup
-
-In a new terminal:
-
+3) Frontend (new terminal)
+```bash
 cd frontend
 npm install
 npm run dev
+```
+Vite dev server runs at `http://localhost:5173`.
 
+---
 
-This starts the Vite development server at http://localhost:5173.
+## 🚀 Running & Testing
+1. Start MongoDB (URI in `.env` must be reachable).
+2. Start backend and frontend as above.
+3. Open: `http://localhost:5173`
+4. Browse products, add to cart and proceed to Checkout.
+5. Complete payment via Stripe Checkout.
 
-🚀 Running the Application
+---
 
-Start the backend (MongoDB + Express):
+## 📡 API Overview
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /api/products | Get all products |
+| POST | /api/orders/checkout | Create a Stripe Checkout session |
+| POST | /api/orders/webhook | Stripe webhook for payment verification |
+| GET | /api/orders/verify-payment/:sessionId | Verify payment session |
+| GET | /api/orders | Get orders (optionally by email) |
+| GET | /api/orders/:id | Get order by ID |
 
-cd Backend
-npm run dev
+---
 
-
-Start the frontend (React + Vite):
-
-cd frontend
-npm run dev
-
-
-Open your browser at:
-👉 http://localhost:5173
-
-📡 API Overview
-Method	Endpoint	Description
-GET	/api/products	Get all products
-POST	/api/orders/checkout	Create Stripe Checkout session
-POST	/api/orders/webhook	Stripe webhook for payment verification
-GET	/api/orders/verify-payment/:sessionId	Verify payment session
-GET	/api/orders	Get orders (optionally by email)
-GET	/api/orders/:id	Get order by ID
-💳 Stripe Webhook Setup
-
+## 💳 Stripe Webhook (Local Testing)
 To test webhooks locally, install the Stripe CLI and run:
-
+```bash
 stripe login
 stripe listen --forward-to localhost:5000/api/orders/webhook
+```
+Copy the webhook secret printed by the Stripe CLI and set `STRIPE_WEBHOOK_SECRET` in your Backend `.env`.
+
+---
+
+## 🧠 Troubleshooting
+- CORS errors: Ensure `CLIENT_URL` in `.env` matches your Vite origin `http://localhost:5173` and the backend `cors()` is configured.
+- MongoDB connection fails: Verify `MONGO_URI` and network connectivity.
+- Stripe webhooks not firing: Make sure backend is running and `STRIPE_WEBHOOK_SECRET` matches the Stripe CLI output.
+
+---
+
+## 🤝 Contributing
+Contributions welcome:
+1. Fork the repo
+2. Create a feature branch
+3. Commit & push
+4. Open a Pull Request
+
+---
+
+## 📄 License
+This example currently does not include an open-source license. Add a `LICENSE` file (MIT recommended) before publishing publicly.
+
+---
+
+## 🔮 Roadmap / Enhancements
+- Add user auth (JWT)
+- Admin dashboard for products & orders
+- Product search & filtering
+- Email receipts (e.g., using SendGrid)
 
 
-Then set the STRIPE_WEBHOOK_SECRET in your .env to the secret shown in the terminal.
+---
 
-🧠 Troubleshooting
-
-CORS Error?
-Ensure CLIENT_URL in .env matches your frontend URL (http://localhost:5173).
-
-MongoDB connection fails?
-Verify your MONGO_URI is correct and accessible.
-
-Stripe webhook not firing?
-Ensure the backend is running and webhook secret matches the Stripe CLI output.
-
-🤝 Contributing
-
-Pull requests and suggestions are welcome!
-
-Fork this repo
-
-Create your feature branch (git checkout -b feature/new-feature)
-
-Commit your changes (git commit -m "Add feature")
-
-Push to your branch (git push origin feature/new-feature)
-
-Open a Pull Request 🎉
-
-📄 License
-
-This project currently has no license.
-If you plan to open source it, add a LICENSE file (MIT recommended).
-
-🧩 Optional Enhancements (Future Scope)
-
-Add authentication (JWT or OAuth)
-
-Implement product search & filtering
-
-Include admin panel for inventory management
+Happy hacking! 🎉
